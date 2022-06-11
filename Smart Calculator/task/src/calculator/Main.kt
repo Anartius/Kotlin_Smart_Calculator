@@ -1,6 +1,28 @@
 package calculator
 
 fun main() {
-    val (a, b) = readln().split(" ").map { it.toInt() }.toList()
-    println(a + b)
+    val numbers = mutableListOf<Int>()
+
+    while (true) {
+
+        when (val input = readln()) {
+            "/help" -> println("The program calculates the sum of numbers")
+
+            "/exit" -> {
+                println("Bye!"); return
+            }
+
+            else -> {
+                numbers.clear()
+
+                try {
+                    numbers.addAll(input.split(" ").map { it.toInt() }.toList())
+                } catch (e: NumberFormatException) {
+                    continue
+                }
+
+                println(numbers.sum())
+            }
+        }
+    }
 }
