@@ -3,7 +3,6 @@ import org.hyperskill.hstest.testcase.CheckResult;
 import org.hyperskill.hstest.testcase.TestCase;
 import org.hyperskill.hstest.testing.TestedProgram;
 
-import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.List;
 
@@ -12,77 +11,18 @@ public class Test extends StageTest<String> {
     public List<TestCase<String>> generate() {
         return Arrays.asList(
             new TestCase<String>().setDynamicTesting(() -> {
+
                 TestedProgram main = new TestedProgram();
 
                 // The base test suit that checks if the program
                 // correctly responses to the commands and can stop
                 main.start();
 
-
                 // test of /help
                 String output = main.execute("/help").trim();
-                if (Array.getLength(output.split(" ")) < 3) {
+                if (output.length() < 4) {
                     return CheckResult.wrong(
                         "It seems like there was no any \"help\" message.");
-                }
-
-                // test of /exit
-                output = main.execute("/exit").trim().toLowerCase();
-                if (!output.startsWith("bye")) {
-                    return CheckResult.wrong(
-                        "Your program didn't print \"bye\" after entering \"/exit\".");
-                }
-
-                return new CheckResult(main.isFinished(),
-                    "Your program should exit after entering \"/exit\".");
-            }),
-
-            new TestCase<String>().setDynamicTesting(() -> {
-                TestedProgram main = new TestedProgram();
-
-                // The test suit that checks if the program
-                // functionality of the previous step works fine
-                main.start();
-
-                // testing sum of two positive numbers
-                String output = main.execute("123 321").trim();
-                if (!output.equals("444")) {
-                    return CheckResult.wrong("The program cannot sum two positive numbers");
-                }
-
-                // testing sum of negative and positive number
-                output = main.execute("-456 390").trim();
-                if (!output.equals("-66")) {
-                    return CheckResult.wrong(
-                        "The program cannot sum negative and positive number");
-                }
-
-                // testing sum of positive and negative number
-                output = main.execute("264 -73").trim();
-                if (!output.equals("191")) {
-                    return CheckResult.wrong(
-                        "The program cannot sum positive and negative number");
-                }
-
-                // the sum of the numbers is zero
-                output = main.execute("2 -2").trim();
-                if (!output.equals("0")) {
-                    return CheckResult.wrong(
-                        "The problem when sum is equal to 0 has occurred");
-                }
-
-                // input one number
-                output = main.execute("99").trim();
-                if (!output.equals("99")) {
-                    return CheckResult.wrong(
-                        "The program printed not the same number that was entered.");
-                }
-
-                // input one negative number
-                output = main.execute("-211").trim();
-                if (!output.equals("-211")) {
-                    return CheckResult.wrong(
-                        "The program printed not the same number that was entered.");
                 }
 
                 // input empty string
@@ -107,49 +47,141 @@ public class Test extends StageTest<String> {
             new TestCase<String>().setDynamicTesting(() -> {
                 TestedProgram main = new TestedProgram();
 
-                // The positive test suit that checks new features
+                // The test suit that checks functionality of the previous steps
                 main.start();
 
                 // sum of positive numbers
-                String output = main.execute("4 6 8").trim();
-                if (!output.equals("18")) {
-                    return CheckResult.wrong(
-                        "The program cannot sum more than two numbers.");
+                String output = main.execute("7 + 1 + 4").trim();
+                if (!output.equals("12")) {
+                    return CheckResult.wrong("The program cannot sum more than two numbers.");
                 }
 
-                // sum mixed numbers
-                output = main.execute("2 -3 -4").trim();
-                if (!output.equals("-5")) {
+                // sum mixed numbers & negative answer
+                output = main.execute("23 - 17 - 13").trim();
+                if (!output.equals("-7")) {
                     return CheckResult.wrong(
                         "Incorrect sum of positive and negative numbers.");
                 }
 
-                // sum of negative numbers
-                output = main.execute("-8 -7 -1").trim();
-                if (!output.equals("-16")) {
-                    return CheckResult.wrong("Incorrect sum of three negative numbers.");
-                }
-
                 // testing a big amount of numbers
-                output = main.execute(
-                    "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1").trim(); // 20
-
-                if (!output.equals("20")){
+                output = main.execute("33 + 21 + 11 + 49 - 32 - 9 + 1 - 80 + 4").trim();
+                if (!output.equals("-2")) {
                     return CheckResult.wrong(
                         "The program cannot process a large number of numbers.");
                 }
 
-                output = main.execute("10 20 30 40 50 -10 -20 -30 -40").trim();
-                if (!output.equals("50")) {
+                // input one number
+                output = main.execute("101").trim();
+                if (!output.equals("101")) {
                     return CheckResult.wrong(
-                        "The program cannot process a large number of numbers.");
+                        "The program printed not the same number that was entered " +
+                        "(when one number is entered it is a valid expression).");
+                }
+
+                // input one negative number
+                output = main.execute("-302").trim();
+                if (!output.equals("-302")) {
+                    return CheckResult.wrong(
+                        "The program printed not the same number that was entered.");
+                }
+
+                // input empty string
+                output = main.execute("");
+                if (output.length() != 0) {
+                    return CheckResult.wrong(
+                        "Incorrect response to an empty string. " +
+                        "The program should not print anything.");
                 }
 
                 // the sum of the numbers is zero
-                output = main.execute("3 -2 -1").trim();
+                output = main.execute("10 - 7 - 3").trim();
                 if (!output.equals("0")) {
                     return CheckResult.wrong(
-                        "The problem when sum is equal to 0 has occurred");
+                        "The problem when sum is equal to 0 has occurred.");
+                }
+
+                // test of multiple operations
+                output = main.execute("5 --- 2 ++++++ 4 -- 2 ---- 1").trim();
+                if (!output.equals("10")) {
+                    return CheckResult.wrong(
+                        "The program cannot process multiple operations " +
+                            "with several operators.");
+                }
+
+                // test of /exit
+                output = main.execute("/exit").trim().toLowerCase();
+                if (!output.startsWith("bye")) {
+                    return CheckResult.wrong(
+                        "Your program didn't print \"bye\" after entering \"/exit\".");
+                }
+
+                return new CheckResult(main.isFinished(),
+                    "Your program should exit after entering \"/exit\".");
+            }),
+
+            new TestCase<String>().setDynamicTesting(() -> {
+                TestedProgram main = new TestedProgram();
+
+                // A set of positive tests for this step
+                main.start();
+
+                // tests of invalid expressions
+                String output = main.execute("123+").trim().toLowerCase();
+                if (!output.startsWith("invalid")) {
+                    return CheckResult.wrong(
+                        "The program cannot process an invalid expression.");
+                }
+
+                output = main.execute("321-").trim().toLowerCase();
+                if (!output.startsWith("invalid")) {
+                    return CheckResult.wrong(
+                        "The program cannot process an invalid expression.");
+                }
+
+                // input one number with plus in front of it
+                output = main.execute("+7").trim();
+                if (!output.equals("7")) {
+                    return CheckResult.wrong(
+                        "The program not correctly processes useless plus sign.");
+                }
+
+                // test of /exit
+                output = main.execute("/exit").trim().toLowerCase();
+                if (!output.startsWith("bye")) {
+                    return CheckResult.wrong(
+                        "Your program didn't print \"bye\" after entering \"/exit\".");
+                }
+
+                return new CheckResult(main.isFinished(),
+                    "Your program should exit after entering \"/exit\".");
+            }),
+            new TestCase<String>().setDynamicTesting(() -> {
+                TestedProgram main = new TestedProgram();
+
+                // A set of negative tests for this step
+                main.start();
+
+                // test of entering not numbers
+                String output = main.execute("abc").trim().toLowerCase();
+                if (!output.startsWith("invalid")) {
+                    return CheckResult.wrong(
+                        "The program should print \"Invalid expression\" " +
+                        "when not a numbers are entered");
+                }
+
+                output = main.execute("one + two + three").trim().toLowerCase();
+                if (!output.startsWith("invalid")) {
+                    return CheckResult.wrong(
+                        "The program should print \"Invalid expression\" " +
+                        "when not a numbers are entered.");
+                }
+
+                // test of a nonexistent command
+                output = main.execute("/go").trim().toLowerCase();
+                if (!output.startsWith("unknown")) {
+                    return CheckResult.wrong(
+                        "The program should print \"Unknown command\" " +
+                        "when a nonexistent command is entered.");
                 }
 
                 // test of /exit

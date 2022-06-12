@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="GradleMigrationSettings" migrationVersion="1" />
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
@@ -19,6 +20,14 @@
             <option value="$PROJECT_DIR$/Smart Calculator/task/build/reports/tests" />
             <option value="$PROJECT_DIR$/Smart Calculator/task/build/test-results" />
             <option value="$PROJECT_DIR$/Smart Calculator/task/build/tmp" />
+            <option value="$PROJECT_DIR$/Topics/Quantifiers/OK Computer" />
+            <option value="$PROJECT_DIR$/Topics/Quantifiers/Theory" />
+            <option value="$PROJECT_DIR$/Topics/Regexps in use/Aaaaaaa to a" />
+            <option value="$PROJECT_DIR$/Topics/Regexps in use/Removing chords" />
+            <option value="$PROJECT_DIR$/Topics/Regexps in use/Sike, that's the wrong number_" />
+            <option value="$PROJECT_DIR$/Topics/Regexps in use/Splitting with spaces" />
+            <option value="$PROJECT_DIR$/Topics/Regexps in use/Theory" />
+            <option value="$PROJECT_DIR$/Topics/Regexps in use/Web colors" />
             <option value="$PROJECT_DIR$/util" />
           </set>
         </option>

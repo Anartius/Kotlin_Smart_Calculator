@@ -10,6 +10,14 @@
       <module name="Smart_Calculator.Smart_Calculator-task-build-test-results.main" target="11" />
       <module name="Smart_Calculator.Smart_Calculator-task-build-tmp.main" target="11" />
       <module name="Smart_Calculator.Smart_Calculator-task.main" target="11" />
+      <module name="Smart_Calculator.Topics-Quantifiers-OK_Computer.main" target="11" />
+      <module name="Smart_Calculator.Topics-Quantifiers-Theory.main" target="11" />
+      <module name="Smart_Calculator.Topics-Regexps_in_use-Aaaaaaa_to_a.main" target="11" />
+      <module name="Smart_Calculator.Topics-Regexps_in_use-Removing_chords.main" target="11" />
+      <module name="Smart_Calculator.Topics-Regexps_in_use-Sike,_that's_the_wrong_number_.main" target="11" />
+      <module name="Smart_Calculator.Topics-Regexps_in_use-Splitting_with_spaces.main" target="11" />
+      <module name="Smart_Calculator.Topics-Regexps_in_use-Theory.main" target="11" />
+      <module name="Smart_Calculator.Topics-Regexps_in_use-Web_colors.main" target="11" />
       <module name="Smart_Calculator.util.main" target="11" />
     </bytecodeTargetLevel>
   </component>
