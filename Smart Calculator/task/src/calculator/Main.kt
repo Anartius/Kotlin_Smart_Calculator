@@ -2,36 +2,83 @@ package calculator
 
 fun main() {
 
+    val vars = mutableMapOf<String, Int>()
+
     while (true) {
-        when (val input = readln()) {
-            "/help" -> println("2 -- 2 equals 2 - (-2) equals 2 + 2")
+        val input = readln().trim()
 
-            "/exit" -> {
-                println("Bye!")
-                return
+        if (input.contains("/")) {
+            when (input) {
+                "/help" -> println("2 -- 2 equals 2 - (-2) equals 2 + 2")
+
+                "/exit" -> {
+                    println("Bye!")
+                    return
+                }
+
+                else -> println("Unknown command")
             }
-
-            else -> if (input.contains("/")) {
-                println("Unknown command")
-            } else if (input.matches("\\s*".toRegex())) {
-                continue
-            } else printResult(input)
+        } else if (input.isEmpty()) {
+            continue
+        } else if (input.matches("^[a-zA-Z]+$".toRegex())) {
+            if (vars.contains(input)) {
+                println(vars.getValue(input))
+            } else println("Unknown variable")
+        }else if (input.contains("=")) {
+            vars.putAll(getVariable(input, vars))
+            continue
+        } else {
+            val inputAsList = getInputAsList(input, vars)
+            printResult(inputAsList)
         }
     }
 }
 
 
-fun getInputAsList(input: String) : MutableList<String> {
+fun getInputAsList(input: String,
+                   vars: MutableMap<String, Int>) : MutableList<String> {
     val inputList = input.replace("\\s+".toRegex(), " ")
         .split(" ").toMutableList()
 
     for (i in inputList.indices) {
         if (inputList[i].matches("[+-]+".toRegex())) {
-            inputList[i] = if ((inputList[i].count { it == '-' } + 2) % 2 == 1) "-" else "+"
+            inputList[i] = if ((inputList[i].count { it == '-' } + 2) % 2 == 1) {
+                "-"
+            } else "+"
+        }
+    }
+
+    for (i in inputList.indices) {
+        if (vars.contains(inputList[i])) {
+            inputList[i] = vars.getValue(inputList[i]).toString()
         }
     }
 
     return inputList
+}
+
+
+fun getVariable(input: String, vars: MutableMap<String, Int>) : Map<String,Int> {
+    val map = mutableMapOf<String, Int>()
+
+    if (input.matches("[a-zA-Z]+\\s*=\\s*-?\\d+".toRegex())) {
+        val (name, value) = input.replace(" ", "")
+            .split("=")
+        map[name] = value.toInt()
+
+    } else if (input.matches("[a-zA-Z0-9]+\\s*=\\s*\\d+".toRegex())) {
+        println("Invalid identifier")
+
+    } else if (input.matches("[a-zA-Z]+\\s*=\\s*[a-zA-Z]+".toRegex())) {
+        val (var1, var2) = input.replace(" ", "")
+            .split("=")
+        if (vars.contains(var2)) {
+            map[var1] = vars.getValue(var2)
+        } else println("Unknown variable")
+
+    }else println("Invalid assignment")
+
+    return map
 }
 
 
@@ -64,8 +111,8 @@ fun calculateTwo(a: Int, b: Int, command: String) : Int {
 }
 
 
-fun printResult(input: String) {
-    val inputAsList = getInputAsList(input)
+fun printResult(inputAsList: MutableList<String>) {
+
 
     try {
         println(calculateAll(inputAsList))
