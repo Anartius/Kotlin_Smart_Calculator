@@ -1,6 +1,6 @@
 package calculator
 
-import kotlin.math.pow
+import java.math.BigInteger
 
 class InvalidExpression : Exception()
 
@@ -40,14 +40,17 @@ class Stack {
 
 fun main() {
     val inputAsPostfix = mutableListOf<String>()
-    val vars = mutableMapOf<String, Int>()
+    val vars = mutableMapOf<String, BigInteger>()
 
     while (true) {
         val input = readln().trim()
 
         if (input.contains("^/[a-z]+".toRegex())) {
             when (input) {
-                "/help" -> println("2 -- 2 equals 2 - (-2) equals 2 + 2")
+                "/help" -> println("""
+                    Supported operations: +, -, *, /, ^(power).
+                    2 -- 2 equals 2 - (-2) equals 2 + 2.                    
+                """.trimIndent())
 
                 "/exit" -> {
                     println("Bye!")
@@ -135,7 +138,7 @@ fun toPostfix(infix: MutableList<String>) : MutableList<String> {
 
 
 fun getInputAsList(input: String,
-                   vars: MutableMap<String, Int>) : MutableList<String> {
+                   vars: MutableMap<String, BigInteger>) : MutableList<String> {
 
     if (input.contains("[*/^]{2,}".toRegex())) throw InvalidExpression()
 
@@ -177,13 +180,14 @@ fun checkInputList(inputList: MutableList<String>) {
 }
 
 
-fun getVariable(input: String, vars: MutableMap<String, Int>) : Map<String,Int> {
-    val map = mutableMapOf<String, Int>()
+fun getVariable(input: String, vars: MutableMap<String, BigInteger>) :
+        Map<String,BigInteger> {
+    val map = mutableMapOf<String, BigInteger>()
 
     if (input.matches("[a-zA-Z]+\\s*=\\s*-?\\d+".toRegex())) {
         val (name, value) = input.replace(" ", "")
             .split("=")
-        map[name] = value.toInt()
+        map[name] = value.toBigInteger()
 
     } else if (input.matches("[a-zA-Z0-9]+\\s*=\\s*\\d+".toRegex())) {
         println("Invalid identifier")
@@ -195,36 +199,36 @@ fun getVariable(input: String, vars: MutableMap<String, Int>) : Map<String,Int> 
             map[var1] = vars.getValue(var2)
         } else println("Unknown variable")
 
-    }else println("Invalid assignment")
+    } else println("Invalid assignment")
 
     return map
 }
 
 
-fun getResult(inputAsList: MutableList<String>) : Int {
+fun getResult(inputAsList: MutableList<String>) : String {
     val stack = Stack()
-    var a: Int
-    var b: Int
+    var a: BigInteger
+    var b: BigInteger
 
     for (i in inputAsList.indices) {
         if ("-?\\d+".toRegex().matches(inputAsList[i])) {
             stack.push(inputAsList[i])
 
         } else {
-            b = stack.pop().toInt()
-            a = stack.pop().toInt()
+            b = stack.pop().toBigInteger()
+            a = stack.pop().toBigInteger()
             when (inputAsList[i]) {
                 "-" -> stack.push((a - b).toString())
                 "+" -> stack.push((a + b).toString())
                 "*" -> stack.push((a * b).toString())
                 "/" -> {
-                    if (b == 0) {
+                    if (b == BigInteger.ZERO) {
                         throw InvalidExpression()
                     } else stack.push(((a / b).toString()))
                 }
-                else -> stack.push((a.toDouble().pow(b)).toInt().toString())
+                else -> stack.push((a.pow(b.toInt())).toString())
             }
         }
     }
-    return stack.pop().toInt()
+    return stack.pop()
 }
