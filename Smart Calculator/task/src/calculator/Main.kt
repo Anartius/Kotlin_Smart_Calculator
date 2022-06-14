@@ -1,13 +1,51 @@
 package calculator
 
-fun main() {
+import kotlin.math.pow
 
+class InvalidExpression : Exception()
+
+class Stack {
+    private val operators = mapOf("+" to 0, "-" to 0,
+        "*" to 1, "/" to 1, "^" to 1, "(" to 1, ")" to 1)
+
+    private val stack = mutableListOf<Pair<String, Int>>()
+
+    fun isEmpty() = stack.isEmpty()
+
+    fun getTopValue() = stack.last().first
+
+    fun getPriority(value: String) = operators.getValue(value)
+
+    fun getTopPriority() = stack.last().second
+
+    fun push(value: String) {
+        if (operators.containsKey(value)) {
+            stack.add(value to operators.getValue(value))
+        } else stack.add(value to 0)
+    }
+
+    fun pop() : String {
+        val result = "" + stack.last().first
+        stack.removeLast()
+        return result
+    }
+
+    fun printState() {
+        print("stack: ")
+        stack.forEach { print("${it.first} ") }
+        println("\n")
+    }
+}
+
+
+fun main() {
+    val inputAsPostfix = mutableListOf<String>()
     val vars = mutableMapOf<String, Int>()
 
     while (true) {
         val input = readln().trim()
 
-        if (input.contains("/")) {
+        if (input.contains("^/[a-z]+".toRegex())) {
             when (input) {
                 "/help" -> println("2 -- 2 equals 2 - (-2) equals 2 + 2")
 
@@ -20,41 +58,122 @@ fun main() {
             }
         } else if (input.isEmpty()) {
             continue
+
         } else if (input.matches("^[a-zA-Z]+$".toRegex())) {
             if (vars.contains(input)) {
                 println(vars.getValue(input))
             } else println("Unknown variable")
+
         }else if (input.contains("=")) {
             vars.putAll(getVariable(input, vars))
             continue
+
         } else {
-            val inputAsList = getInputAsList(input, vars)
-            printResult(inputAsList)
+            try {
+                val inputAsList = getInputAsList(input, vars)
+                inputAsPostfix.addAll(toPostfix(inputAsList))
+                println(getResult(inputAsPostfix))
+            } catch (e:InvalidExpression) {
+                println("Invalid expression")
+                continue
+            }
         }
     }
 }
 
 
+fun toPostfix(infix: MutableList<String>) : MutableList<String> {
+    val stack = Stack()
+    val postfix = mutableListOf<String>()
+
+    for (i in infix.indices) {
+
+        if (infix[i].matches("-?\\d+".toRegex())) {
+            postfix.add(infix[i])
+
+        } else if (infix[i].matches("^[-+*/^()]$".toRegex())) {
+            val currentItemPriority = stack.getPriority(infix[i])
+
+            if (infix[i] != ")" && (stack.isEmpty() ||
+                        stack.getTopPriority() < currentItemPriority)) {
+
+                stack.push(infix[i])
+
+            } else if (infix[i] == "(") {
+                stack.push(infix[i])
+
+            } else if (infix[i] == ")") {
+                if (stack.getTopValue() != "(") {
+                    while (stack.getTopValue() != "(") {
+                        postfix.add(stack.pop())
+                    }
+                    stack.pop()
+                }
+
+            } else if ((stack.getTopPriority() >= currentItemPriority)) {
+                if (stack.getTopValue() != "(") {
+                    while (!stack.isEmpty() && stack.getTopValue() != "(" &&
+                        (stack.getTopPriority() >= currentItemPriority)) {
+
+                        postfix.add(stack.pop())
+                    }
+                    stack.push(infix[i])
+
+                } else {
+                    stack.push(infix[i])
+                }
+            }
+        }
+
+        if (i == infix.size - 1) {
+            while (!stack.isEmpty()) postfix.add(stack.pop())
+        }
+    }
+
+    return postfix
+}
+
+
 fun getInputAsList(input: String,
                    vars: MutableMap<String, Int>) : MutableList<String> {
-    val inputList = input.replace("\\s+".toRegex(), " ")
-        .split(" ").toMutableList()
+
+    if (input.contains("[*/^]{2,}".toRegex())) throw InvalidExpression()
+
+
+    val regex = """(^-*\d+)|(~?\d+)|\)|[-+]+|\(|[*/^]|[a-zA-z]""".toRegex()
+    val inputString = input.replace("\\(-".toRegex(), "(~")
+        .replace("\\s+".toRegex(), "")
+
+    val inputList = regex.findAll(inputString).map { it.value }.toMutableList()
 
     for (i in inputList.indices) {
+        inputList[i] = inputList[i].replace("~", "-")
+
         if (inputList[i].matches("[+-]+".toRegex())) {
             inputList[i] = if ((inputList[i].count { it == '-' } + 2) % 2 == 1) {
                 "-"
             } else "+"
         }
-    }
 
-    for (i in inputList.indices) {
         if (vars.contains(inputList[i])) {
             inputList[i] = vars.getValue(inputList[i]).toString()
         }
     }
+    checkInputList(inputList)
 
     return inputList
+}
+
+
+fun checkInputList(inputList: MutableList<String>) {
+
+    val amountOfDigital = inputList.count { "-?\\d+".toRegex().matches(it) }
+    val amountOfOperators = inputList.count { "[-+*/^]".toRegex().matches(it) }
+    val amountOfLeftPar = inputList.count { it == "(" }
+    val amountOfRightPar = inputList.count { it == ")" }
+
+    if (amountOfDigital != amountOfOperators + 1 ||
+            amountOfLeftPar != amountOfRightPar) throw InvalidExpression()
 }
 
 
@@ -82,41 +201,30 @@ fun getVariable(input: String, vars: MutableMap<String, Int>) : Map<String,Int> 
 }
 
 
-fun calculateAll(inputList: MutableList<String>) : String {
+fun getResult(inputAsList: MutableList<String>) : Int {
+    val stack = Stack()
     var a: Int
     var b: Int
-    var tempResult = 0
-    var command: String
 
-    if (inputList.size == 1) return inputList[0].toInt().toString()
+    for (i in inputAsList.indices) {
+        if ("-?\\d+".toRegex().matches(inputAsList[i])) {
+            stack.push(inputAsList[i])
 
-    for (i in 0..(inputList.size - 2) / 2) {
-        a = if (i == 0) inputList[i * 2].toInt() else tempResult
-        command = inputList[i * 2 + 1]
-        b = inputList[i * 2 + 2].toInt()
-
-        tempResult = calculateTwo(a, b, command)
+        } else {
+            b = stack.pop().toInt()
+            a = stack.pop().toInt()
+            when (inputAsList[i]) {
+                "-" -> stack.push((a - b).toString())
+                "+" -> stack.push((a + b).toString())
+                "*" -> stack.push((a * b).toString())
+                "/" -> {
+                    if (b == 0) {
+                        throw InvalidExpression()
+                    } else stack.push(((a / b).toString()))
+                }
+                else -> stack.push((a.toDouble().pow(b)).toInt().toString())
+            }
+        }
     }
-
-    return tempResult.toString()
-}
-
-
-fun calculateTwo(a: Int, b: Int, command: String) : Int {
-    return when(command) {
-        "+" -> a + b
-        "-" -> a - b
-        else -> 0
-    }
-}
-
-
-fun printResult(inputAsList: MutableList<String>) {
-
-
-    try {
-        println(calculateAll(inputAsList))
-    } catch (e: Exception) {
-        println("Invalid expression")
-    }
+    return stack.pop().toInt()
 }
